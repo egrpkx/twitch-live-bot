@@ -14,6 +14,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,10 +34,19 @@ jobs:
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
           TWITCH_CHANNEL_LOGIN: egrpk
 
+      - name: Show files
+        run: ls -la
+
       - name: Save state
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add state.json
-          git diff --cached --quiet || git commit -m "Update bot state"
-          git push
+          if [ -f state.json ]; then
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git add state.json
+            git status
+            git diff --cached --quiet || git commit -m "Update bot state"
+            git push
+          else
+            echo "state.json not found"
+            exit 1
+          fi
