@@ -21,6 +21,10 @@ scopes = ['https://www.googleapis.com/auth/spreadsheets']
 creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 gc = gspread.authorize(creds)
 sheet = gc.open_by_key(GOOGLE_SHEET_ID).worksheet('state')
+try:
+    sheet = gc.open_by_key(GOOGLE_SHEET_ID).worksheet('state')
+except gspread.WorksheetNotFound:
+    sheet = gc.open_by_key(GOOGLE_SHEET_ID).add_worksheet(title='state', rows=10, cols=2)
 
 
 def load_state():
