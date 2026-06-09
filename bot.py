@@ -42,6 +42,7 @@ def get_twitch_token():
 
 def is_live():
     token = get_twitch_token()
+
     r = requests.get(
         "https://api.twitch.tv/helix/streams",
         headers={
@@ -52,6 +53,7 @@ def is_live():
         timeout=20,
     )
     r.raise_for_status()
+
     return len(r.json().get("data", [])) > 0
 
 
@@ -73,14 +75,15 @@ def send_live_message():
         timeout=20,
     )
     r.raise_for_status()
+
     return r.json()["result"]["message_id"]
 
 
-def delete_message(message_id):
+def delete_live_message(message_id):
     if not message_id:
         return
 
-    requests.post(
+    r = requests.post(
         f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/deleteMessage",
         json={
             "chat_id": TELEGRAM_CHANNEL_ID,
@@ -89,27 +92,37 @@ def delete_message(message_id):
         timeout=20,
     )
 
+    print(r.text)
+
 
 def main():
     state = load_state()
     live_now = is_live()
     was_live = state.get("was_live", False)
 
+    print(f"live_now={live_now}")
+    print(f"was_live={was_live}")
+
     if live_now and not was_live:
         message_id = send_live_message()
+
         state["was_live"] = True
         state["message_id"] = message_id
         save_state(state)
+
         print("Стрим онлайн. Сообщение отправлено.")
 
     elif not live_now and was_live:
-        delete_message(state.get("message_id"))
+        delete_live_message(state.get("message_id"))
+
         state["was_live"] = False
         state["message_id"] = None
         save_state(state)
+
         print("Стрим оффлайн. Сообщение удалено.")
 
     else:
+        save_state(state)
         print("Статус без изменений.")
 
 
