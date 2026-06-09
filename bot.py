@@ -23,12 +23,14 @@ def get_sheet():
 
     spreadsheet = gc.open_by_key(GOOGLE_SHEET_ID)
 
+    # Попытка открыть лист 'state', создаём если нет
     try:
         sheet = spreadsheet.worksheet("state")
     except gspread.WorksheetNotFound:
         sheet = spreadsheet.add_worksheet(title="state", rows=10, cols=2)
-
-    sheet.update("A1:B1", [["was_live", "message_id"]])
+        # Обновляем заголовки
+        sheet.update("A1:B1", [["was_live", "message_id"]])
+        sheet.update("A2:B2", [["false", ""]])
 
     return sheet
 
