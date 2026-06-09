@@ -6,16 +6,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   live_check:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -23,7 +20,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt gspread google-auth requests
 
       - name: Run bot
         run: python bot.py
@@ -33,20 +30,5 @@ jobs:
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
           TWITCH_CHANNEL_LOGIN: egrpk
-
-      - name: Show files
-        run: ls -la
-
-      - name: Save state
-        run: |
-          if [ -f state.json ]; then
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
-            git add state.json
-            git status
-            git diff --cached --quiet || git commit -m "Update bot state"
-            git push
-          else
-            echo "state.json not found"
-            exit 1
-          fi
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
